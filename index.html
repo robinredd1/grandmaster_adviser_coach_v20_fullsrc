@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grandmaster Advisor‑Coach v20 — Premarket Quick Wins + Core</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#0f1520; --ink:#e8eef6; --muted:#8a99ad; --edge:#1c2636; --good:#00d27f; --bad:#ff5252; --accent:#9bc1ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif; }
+    .wrap { max-width: 1120px; margin: 22px auto; padding: 0 16px;}
+    h1 { font-size: 22px; margin: 0 0 16px; color: var(--accent); }
+    .row { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--edge); border-radius: 12px; padding: 16px; }
+    .k { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+    .v { font-size: 28px; font-weight: 800; }
+    .pill { display:inline-block; padding: 6px 10px; border-radius: 999px; background: #162036; color:#aecdff; font-size: 12px; margin-right: 8px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin-top: 16px; }
+    .pick { background: var(--card); border:1px solid var(--edge); border-radius:12px; padding:16px; }
+    .sym { font-size: 20px; font-weight: 800; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .green { color: var(--good); } .red { color: var(--bad); }
+    .section { margin-top: 18px; }
+    @media (max-width:900px){ .row, .grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Grandmaster Advisor‑Coach v20 — Premarket Quick Wins + Core</h1>
+
+    <div class="row">
+      <div class="card">
+        <div class="k">EQUITY</div><div id="equity" class="v">$0.00</div>
+        <div class="muted">Paper account value</div>
+      </div>
+      <div class="card">
+        <div class="k">CASH</div><div id="cash" class="v">$0.00</div>
+        <div class="muted">Uninvested cash</div>
+      </div>
+      <div class="card">
+        <div class="k">DAY P&L</div><div id="daypnl" class="v">$0.00</div>
+        <div class="muted" id="acctTs">Last account update —</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <span class="pill" id="cap">Capital: $0</span>
+      <span class="pill" id="risk">Risk/Trade: $0</span>
+      <span class="pill" id="scanTs"></span>
+    </div>
+
+    <div class="section">
+      <div class="k" style="margin-bottom:6px">QUICK WINS — top premarket movers still trending ↑</div>
+      <div class="grid" id="quick"></div>
+    </div>
+
+    <div class="section">
+      <div class="k" style="margin-bottom:6px">CORE — liquid leaders (NVDA, AAPL, etc.)</div>
+      <div class="grid" id="core"></div>
+    </div>
+
+    <div class="muted" style="margin-top:18px">No orders are placed. Suggestions only. Includes <b>buy limit</b>, <b>share size</b>, <b>stop loss</b>, <b>trailing stop %</b>, and <b>first target</b>.</div>
+  </div>
+
+<script>
+const fmtMoney=v=>Number(v||0).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
+const fmtPct=v=>(Number(v||0)).toFixed(2)+'%';
+function setText(id, txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
+function card(p){
+  const cls=p.day_pct>0?'green':(p.day_pct<0?'red':'');
+  return `<div class="pick">
+    <div class="sym">${p.symbol} <span class="${cls}">(${fmtPct(p.day_pct)})</span></div>
+    <div class="mono">Last: ${fmtMoney(p.last)} &nbsp; Buy ≤ <b>${fmtMoney(p.buy_limit)}</b></div>
+    <div class="mono">Size: <b>${p.size_qty}</b> ${p.size_qty.indexOf('.')>-1?'(fractional)':''} &nbsp; 5m $Vol: ${Number(p.dv5||0).toLocaleString()}</div>
+    <div class="mono">Stop: <b>${fmtMoney(p.stop_price)}</b> &nbsp; Trail: <b>${p.trail_pct}%</b> &nbsp; 1st Target: <b>${fmtMoney(p.first_target)}</b></div>
+    <div class="muted">${p.mode==='QUICK'?'Quick scalp candidate':'Core momentum candidate'}</div>
+  </div>`;
+}
+async function pullAccount(){
+  try{ const r=await fetch('/account',{cache:'no-store'}); const j=await r.json();
+    if(j.ok){ setText('equity', fmtMoney(j.equity)); setText('cash', fmtMoney(j.cash)); setText('daypnl', fmtMoney(j.day_pnl)); setText('acctTs','Last account update — '+(j.ts||'')); }
+  } catch(e){}
+}
+async function pullPicks(){
+  try{ const r=await fetch('/picks',{cache:'no-store'}); const j=await r.json();
+    if(j.ok){
+      setText('cap', 'Capital: '+fmtMoney(j.capital));
+      setText('risk','Risk/Trade: '+fmtMoney(j.risk_per_trade));
+      setText('scanTs','Scan: '+(j.ts||''));
+      const q=document.getElementById('quick'); q.innerHTML=(j.quick&&j.quick.length)? j.quick.map(card).join('') : '<div class="pick">No quick picks in the last pass.</div>';
+      const c=document.getElementById('core'); c.innerHTML=(j.core&&j.core.length)? j.core.map(card).join('') : '<div class="pick">No core picks in the last pass.</div>';
+    }
+  } catch(e){}
+}
+async function tick(){ await pullAccount(); await pullPicks(); setTimeout(tick, 2000); }
+tick();
+</script>
+</body>
+</html>

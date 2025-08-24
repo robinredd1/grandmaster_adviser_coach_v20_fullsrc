@@ -1,0 +1,54 @@
+import os
+
+# === API KEYS (HARD-CODED) ===
+# SECURITY: Keep your GitHub repo PRIVATE if you commit this file as-is.
+FINNHUB_API_KEY   = "d2f3fq9r01qj3egr0apgd2f3fq9r01qj3egr0aq0"
+ALPACA_API_KEY    = "PKXB8N50RX1YLX2N39AE"
+ALPACA_API_SECRET = "3IGZrOtdWnuOCNGOVAYfGTCaccZh7h0tPDmNvFHq"
+ALPACA_BROKER_BASE = "https://paper-api.alpaca.markets"
+
+# === CAPITAL & RISK ===
+ACCOUNT_CAPITAL_USD     = 4000.0
+RISK_PER_TRADE_DOLLARS  = 40.0
+DOLLARS_PER_QUICK       = 250
+DOLLARS_PER_CORE        = 500
+ALLOW_FRACTIONAL        = False
+
+# === MODES ===
+PREMARKET_MODE = True
+SCAN_BATCH_SIZE = 350
+CONCURRENCY     = 6
+BASE_SCAN_DELAY = 3.0
+FINNHUB_MAX_CALLS_PER_MIN = 50
+
+# === QUICK WINS (small/mid caps, volatile) ===
+QW_MAX_PRICE = 40.0
+QW_MIN_PRICE = 0.75
+QW_MIN_DAY_PCT = 3.0
+QW_SHORTLIST_TOP_N = 40
+QW_MIN_DOLLAR_VOL_5M = 500_000
+QW_TAKE = 3
+QW_STOP_PCT = 0.025
+QW_TRAIL_PCT = 0.020
+QW_LIMIT_SLIPPAGE_BPS = 15
+QW_TARGET_R_MULT = 1.5
+
+# === CORE (megacaps / liquid leaders) ===
+CORE_SYMBOLS = ["NVDA","AAPL","MSFT","TSLA","AMD","META","AMZN","GOOGL","AVGO","NFLX"]
+CORE_MIN_DAY_PCT = 0.2
+CORE_TAKE = 2
+CORE_STOP_PCT = 0.010
+CORE_TRAIL_PCT = 0.015
+CORE_LIMIT_SLIPPAGE_BPS = 10
+CORE_MIN_DOLLAR_VOL_5M = 5_000_000
+
+# === Earnings/Gap checks (shared) ===
+EARNINGS_BLACKOUT_DAYS = 2
+MAX_GAP_PCT_ABS = 25.0
+
+# === Output files ===
+STATE_PICKS   = "public/picks.json"
+STATE_ACCOUNT = "public/account.json"
+
+# === UI ===
+REFRESH_SECONDS = 2
